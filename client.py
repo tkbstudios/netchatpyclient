@@ -35,8 +35,7 @@ if not dotenv_loaded:
     logger.error("No `.env` found!")
     sys.exit(1)
 
-# TINET_BASE_API_URL = "https://tinet.tkbstudios.com/api"
-TINET_BASE_API_URL = "http://localhost:8000/api"
+TINET_BASE_API_URL = "https://tinet.tkbstudios.com/api"
 
 NETCHAT_SERVER_HOST = os.environ.get("NETCHAT_SERVER_HOST", default="netchat.tkbstudios.com")
 NETCHAT_SERVER_PORT = int(os.environ.get("NETCHAT_SERVER_PORT", default=2052))
