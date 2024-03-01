@@ -3,7 +3,6 @@ import sys
 import socket
 import logging
 import threading
-from datetime import datetime, timedelta
 
 import requests
 from colorlog import ColoredFormatter
@@ -36,7 +35,8 @@ if not dotenv_loaded:
     logger.error("No `.env` found!")
     sys.exit(1)
 
-TINET_BASE_API_URL = "https://tinet.tkbstudios.com/api"
+# TINET_BASE_API_URL = "https://tinet.tkbstudios.com/api"
+TINET_BASE_API_URL = "http://localhost:8000/api"
 
 NETCHAT_SERVER_HOST = os.environ.get("NETCHAT_SERVER_HOST", default="netchat.tkbstudios.com")
 NETCHAT_SERVER_PORT = int(os.environ.get("NETCHAT_SERVER_PORT", default=2052))
@@ -49,12 +49,12 @@ def get_session_token(username, calc_key):
     if os.path.exists(session_token_file):
         with open(session_token_file, 'r') as file:
             token = file.read()
-            if len(token) == 1:
+            if len(token) == 256:
                 logger.info("Using the token from session.txt, checking token...")
-                auth_with_session_token_url = f"{TINET_BASE_API_URL}/v1/user/sessions/auth"
+                auth_with_session_token_url = f"{TINET_BASE_API_URL}/v1/user/sessions/validity-check"
                 headers = {
                     "Content-Type": 'application/json',
-                    "Accept": 'application/json'
+                    "Accept": 'application/json',
                 }
                 body = {
                     "username": username,
@@ -65,12 +65,14 @@ def get_session_token(username, calc_key):
                 logger.debug(f"request status code: {session_token_request.status_code}")
                 if session_token_request.status_code == 200:
                     user_data = session_token_request.json()
-                    print(user_data)
-                    if user_data['username'] == username:
+                    if user_data['success'] is True:
                         logger.info("Token is valid")
                         return token
                     else:
                         logger.info("Token invalid, requesting a new one.")
+                else:
+                    logger.warning("Couldn't check token, requesting a new one.")
+                    logger.error(session_token_request.content.decode())
 
     get_session_url = f"{TINET_BASE_API_URL}/v1/user/calc/auth"
     headers = {
@@ -86,9 +88,8 @@ def get_session_token(username, calc_key):
         session_token_request_json = session_token_request.json()
         if session_token_request_json['auth_success'] is True:
             session_token = session_token_request_json['session_token']
-            expiration_time = datetime.now() + timedelta(hours=10)
             with open(session_token_file, 'w') as file:
-                file.write(f"{session_token}\n{expiration_time.isoformat()}")
+                file.write(session_token)
             return session_token
         else:
             return False
