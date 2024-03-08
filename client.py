@@ -107,6 +107,10 @@ def receive_messages(socket_conn):
                 if len(recv_msg_data) == 3:
                     recv_recipient, recv_username, recv_msg = recv_msg_data
                     logger.info(f"{recv_username}: {recv_msg}")
+                elif recv_bytes_decoded.startswith("WELCOME_MESSAGE:"):
+                    _, received_welcome_message = recv_bytes.decode().strip().split(":", 1)
+                    logger.info("Welcome message from server")
+                    logger.info(received_welcome_message)
                 else:
                     logger.error(f"Could not send message! Response from server: {recv_bytes_decoded}")
             else:
