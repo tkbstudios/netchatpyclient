@@ -131,7 +131,7 @@ if __name__ == "__main__":
         recv_bytes = client_socket.recv(128)
         if not authenticated:
             if len(recv_bytes) > 0:
-                if recv_bytes.decode() == "AUTH_SUCCESS":
+                if recv_bytes.decode().strip() == "AUTH_SUCCESS":
                     authenticated = True
                     logger.info("Logged in successfully!")
                     break
